@@ -1,0 +1,22 @@
+{
+  "name": "@stormgle/userdb-dynamodb",
+  "version": "1.0.0",
+  "description": "UserDB API implemented using AWS DynamoDB",
+  "main": "api.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stormgle/userdb-dynamodb.git"
+  },
+  "author": "duongtdn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stormgle/userdb-dynamodb/issues"
+  },
+  "homepage": "https://github.com/stormgle/userdb-dynamodb#readme",
+  "dependencies": {
+    "aws-sdk": "^2.205.0"
+  }
+}
