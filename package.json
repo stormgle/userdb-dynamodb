@@ -1,7 +1,7 @@
 {
   "name": "@stormgle/userdb-dynamodb",
   "version": "1.0.0",
-  "description": "UserDB API implemented using AWS DynamoDB",
+  "description": "AWS DynamoDB driver for userdb-api",
   "main": "api.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
