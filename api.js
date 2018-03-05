@@ -3,6 +3,8 @@
 const AWS = require('aws-sdk');
 const Joi = require('joi')
 
+const crypto = require('crypto')
+
 let dynamodb = null
 const userDB = {}
 
@@ -85,6 +87,8 @@ const db = {
       return this;
     }
 
+    user.login.password = this._hashPassword(user.login.password);
+
     const docClient = new AWS.DynamoDB.DocumentClient();
 
     docClient.put(
@@ -97,7 +101,7 @@ const db = {
         done(err, null)
       } else {
 
-        done(null, this._bindUtilsToUser(user));  
+        done(null, this._bindUtilsToUser.call(this, user));  
       }
     });
 
@@ -109,10 +113,19 @@ const db = {
   },
 
   _bindUtilsToUser(user) {
-    user.verifyPassword = function(password) {
-      return user.login.password === password;
+    user.verifyPassword = (password) => {
+      return user.login.password === this._hashPassword(password);
     }
     return user
+  },
+
+  _hashPassword(password) {
+    const hash = crypto.createHash('sha256');
+    const head = process.env.PWD_PREFIX;
+    const tail = process.env.PWD_SUFFIX;
+    console.log(`${head} - ${tail}`)
+    hash.update(`${head}${password}${tail}`);
+    return hash.digest('hex');
   }
 
 }
