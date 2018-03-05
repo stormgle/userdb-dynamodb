@@ -92,11 +92,12 @@ const db = {
         TableName: "USERS",
         Item: user
       }, 
-      function(err, data) {
+      (err, data) => {
       if (err) {
         done(err, null)
       } else {
-        done(null, data)  
+
+        done(null, this._bindUtilsToUser(user));  
       }
     });
 
@@ -105,6 +106,13 @@ const db = {
 
   getPolicy(role, callback) {
     callback(null,{'profile': true});
+  },
+
+  _bindUtilsToUser(user) {
+    user.verifyPassword = function(password) {
+      return user.login.password === password;
+    }
+    return user
   }
 
 }
