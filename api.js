@@ -123,7 +123,6 @@ const db = {
     const hash = crypto.createHash('sha256');
     const head = process.env.PWD_PREFIX;
     const tail = process.env.PWD_SUFFIX;
-    console.log(`${head} - ${tail}`)
     hash.update(`${head}${password}${tail}`);
     return hash.digest('hex');
   }
