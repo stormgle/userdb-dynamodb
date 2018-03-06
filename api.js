@@ -87,6 +87,8 @@ const db = {
       return this;
     }
 
+    user.createdAt = new Date();
+
     user.login.password = this._hashPassword(user.login.password);
 
     const docClient = new AWS.DynamoDB.DocumentClient();
