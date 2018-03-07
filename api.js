@@ -67,11 +67,11 @@ const db = {
           "role": role
         }
       },
-      function(err, data) {
-        if (err) { callback(err, null) }
+      (err, data) => {
+        if (err) { callback({error:err}, null) }
         else {
           if (data && data.Item) {
-            callback(null, data.Item)
+            callback(null, this._bindUtilsToUser.call(this, data.Item))
           } else {
             callback(null, null)
           }
@@ -87,7 +87,8 @@ const db = {
       return this;
     }
 
-    user.createdAt = new Date();
+    const now = new Date();
+    user.createdAt = now.getTime();
 
     user.login.password = this._hashPassword(user.login.password);
 
@@ -100,14 +101,40 @@ const db = {
       }, 
       (err, data) => {
       if (err) {
-        done(err, null)
+        done && done(err, null)
       } else {
 
-        done(null, this._bindUtilsToUser.call(this, user));  
+        done && done(null, this._bindUtilsToUser.call(this, user));  
       }
     });
 
     return this;
+  },
+
+  deleteUser({username, role}) {
+    if (!this._ready) {
+      done({error: 'dynamo-db is not ready yet'}, null);
+      return this;
+    }
+
+    const docClient = new AWS.DynamoDB.DocumentClient();
+
+    docClient.delete(
+      {
+        TableName: "USERS",
+        Key: {username, role}
+      }, 
+      (err, data) => {
+      if (err) {
+        done(err, null)
+      } else {
+
+        done(null, data);  
+      }
+    });
+
+    return this;
+
   },
 
   getPolicy(role, callback) {
@@ -147,7 +174,6 @@ function DynamoDB({ region = 'us-west-2', endpoint = 'http://localhost:8000' }, 
         db._ready = true;
         onReady();
       }
-      
     });
   } else {
     db._ready = true;
