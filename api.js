@@ -37,9 +37,9 @@ const db = {
 
     dynamodb.createTable(Users, function(err, data) {
       if (err) {
-        done(err);
+        done && done(err);
       } else {
-        done();
+        done && done();
       }
     });
 
