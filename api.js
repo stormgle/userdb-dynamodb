@@ -11,21 +11,16 @@ const userDB = {}
 const Users = {
   TableName : "USERS",
   KeySchema: [       
-      { AttributeName: "username", KeyType: "HASH"},  //Partition key
-      { AttributeName: "role", KeyType: "RANGE" }  //Sort key
+    { AttributeName: "uid", KeyType: "HASH" }
   ],
   AttributeDefinitions: [       
-      { AttributeName: "username", AttributeType: "S" },
-      { AttributeName: "role", AttributeType: "S" },
-      { AttributeName: "uid", AttributeType: "S" }
+    { AttributeName: "uid", AttributeType: "S" },
+    { AttributeName: "username", AttributeType: "S" }
   ],
   GlobalSecondaryIndexes: [{
-    IndexName: "UserIndex",
+    IndexName: "LOGIN",
     KeySchema: [
-        {
-            AttributeName: "uid",
-            KeyType: "HASH"
-        }
+      { AttributeName: "username", KeyType: "HASH"},     
     ],
     Projection: {
         ProjectionType: "ALL"
@@ -68,37 +63,48 @@ const db = {
       console.error("DynamoDB is not ready yet")
       return this;
     }
-    dynamodb.deteleTable({ TableName: "USERS" }, done)
+    dynamodb.deleteTable({ TableName: "USERS" }, done)
   },
 
-  findUser({ username = null, role = null }, callback) {
+  queryUser({ username = null, uid = null }, done) {
 
-    if (!username || !role ) {
-      callback({error: 'must specify username and role'})
+    if (!username  && !uid ) {
+      done({error: 'must specify username or uid'}, null)
       return
     }
 
-    if (username.length === 0 || role.length === 0) {
-      callback({error: 'username and role must no empty'})
+    if (username.length === 0 && uid.length === 0) {
+      done({error: 'username and uid are empty'})
       return
     }
 
-    const docClient = new AWS.DynamoDB.DocumentClient();
-    docClient.get(
+    const params = uid && uid.length > 0 ?
       { 
         TableName: "USERS", 
-        Key: {
-          "username": username,
-          "role": role
-        }
-      },
+        KeyConditionExpression: `uid = :uid`,
+        ExpressionAttributeValues: {
+          ':uid' : uid
+        } 
+      }
+      :
+      { 
+        TableName: "USERS", 
+        IndexName: "LOGIN", 
+        KeyConditionExpression: `username = :username`,
+        ExpressionAttributeValues: {
+          ':username' : username
+        }  
+      }
+
+    const docClient = new AWS.DynamoDB.DocumentClient();
+    docClient.query(params,
       (err, data) => {
-        if (err) { callback({error:err}, null) }
+        if (err) { done({error:err}, null) }
         else {
-          if (data && data.Item) {
-            callback(null, this._bindUtilsToUser.call(this, data.Item))
+          if (data && data.Items && data.Items.length > 0) {
+            done(null, this._bindUtilsToUser.call(this, data.Items[0]))
           } else {
-            callback(null, null)
+            done(null, null)
           }
         }
         
@@ -136,7 +142,7 @@ const db = {
     return this;
   },
 
-  deleteUser({username, role}) {
+  deleteUser(uid) {
     if (!this._ready) {
       done({error: 'dynamo-db is not ready yet'}, null);
       return this;
@@ -147,18 +153,83 @@ const db = {
     docClient.delete(
       {
         TableName: "USERS",
-        Key: {username, role}
+        Key: { uid }
       }, 
       (err, data) => {
       if (err) {
-        done(err, null)
+        done(err)
       } else {
-
-        done(null, data);  
+        done(null);  
       }
     });
 
     return this;
+
+  },
+
+  update(uid, props, done) {
+    if (!this._ready) {
+      done({error: 'dynamo-db is not ready yet'}, null);
+      return this;
+    }
+
+    if (!uid) {
+      done({error: 'need to specify uid'}, null);
+      return this;
+    }
+
+
+    if (props) {
+      if (props.login) {
+        this._updatePassword(uid, props, done);
+        return this;
+      } else {
+        this._updateUserProps(uid, props, done);
+      }   
+    } else {
+      done({error: 'need specify changes'}, null);
+    }
+
+  },
+
+  _updateUserProps(uid, props, done) {
+
+    const docClient = new AWS.DynamoDB.DocumentClient();
+    let exp  = 'set';
+    const val = {};
+    val[':uid'] = uid;
+    let i = 1;
+
+    for (let name in props) {
+      if (typeof props[name] === 'object') {
+        for (let item in props[name]) {
+          const v = `:c${i}`;
+          exp += ` ${name}.${item} = ${v},`;
+          val[v] = props[name][item];
+          i++;
+        }
+      } else {
+        const v = `:c${i}`;
+        exp += ` ${name} = :c${i},`;
+        val[v] = props[name];
+        i++
+      }
+    }
+
+    exp = exp.replace(/,$/,'')
+
+    docClient.update(
+      {
+        TableName: 'USERS',
+        IndexName: 'UserIndex',
+        Key: { uid },
+        KeyConditionExpression:'uid = :uid',
+        UpdateExpression: exp,
+        ExpressionAttributeValues: val,
+        ReturnValues:"UPDATED_NEW"
+      },
+      done
+    )
 
   },
 
