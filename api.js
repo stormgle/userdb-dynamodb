@@ -16,11 +16,28 @@ const Users = {
   ],
   AttributeDefinitions: [       
       { AttributeName: "username", AttributeType: "S" },
-      { AttributeName: "role", AttributeType: "S" }
+      { AttributeName: "role", AttributeType: "S" },
+      { AttributeName: "uid", AttributeType: "S" }
   ],
+  GlobalSecondaryIndexes: [{
+    IndexName: "UserIndex",
+    KeySchema: [
+        {
+            AttributeName: "uid",
+            KeyType: "HASH"
+        }
+    ],
+    Projection: {
+        ProjectionType: "ALL"
+    },
+    ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1
+    }
+  }],
   ProvisionedThroughput: {       
-      ReadCapacityUnits: 10, 
-      WriteCapacityUnits: 10
+      ReadCapacityUnits: 1, 
+      WriteCapacityUnits: 1
   }
 };
 
@@ -44,6 +61,14 @@ const db = {
     });
 
     return this;
+  },
+
+  dropTable(done) {
+    if (!this._ready) {
+      console.error("DynamoDB is not ready yet")
+      return this;
+    }
+    dynamodb.deteleTable({ TableName: "USERS" }, done)
   },
 
   findUser({ username = null, role = null }, callback) {
@@ -138,7 +163,7 @@ const db = {
   },
 
   getPolicy(role, callback) {
-    callback(null,{'profile': true});
+    callback(null,{'account': true});
   },
 
   _bindUtilsToUser(user) {
