@@ -197,7 +197,6 @@ const db = {
     const docClient = new AWS.DynamoDB.DocumentClient();
     let exp  = 'set';
     const val = {};
-    val[':uid'] = uid;
     let i = 1;
 
     for (let name in props) {
@@ -221,9 +220,7 @@ const db = {
     docClient.update(
       {
         TableName: 'USERS',
-        IndexName: 'UserIndex',
         Key: { uid },
-        KeyConditionExpression:'uid = :uid',
         UpdateExpression: exp,
         ExpressionAttributeValues: val,
         ReturnValues:"UPDATED_NEW"
