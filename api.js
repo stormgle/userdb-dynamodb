@@ -230,6 +230,26 @@ const db = {
 
   },
 
+  _updatePassword(uid, {login}, done) {
+
+    const docClient = new AWS.DynamoDB.DocumentClient();
+
+    const exp  = 'set login.password = :p';
+    const val = { ':p': this._hashPassword(login.password)};
+
+    docClient.update(
+      {
+        TableName: 'USERS',
+        Key: { uid },
+        UpdateExpression: exp,
+        ExpressionAttributeValues: val,
+        ReturnValues:"UPDATED_NEW"
+      },
+      done
+    )
+
+  },
+
   getPolicy(role, callback) {
     callback(null,{'account': true});
   },
