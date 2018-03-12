@@ -199,6 +199,11 @@ const db = {
     const val = {};
     let i = 1;
 
+    if (props.uid) {
+      uid = props.uid;
+      delete props.uid;
+    }
+
     for (let name in props) {
       if (typeof props[name] === 'object') {
         for (let item in props[name]) {
@@ -250,8 +255,16 @@ const db = {
 
   },
 
-  getPolicy(role, callback) {
-    callback(null,{'account': true});
+  getPolicy(roles, callback) {
+    const policies = {}
+    roles.forEach( (role) => {
+      if (role === 'admin') {
+        policies.super = true;
+      } else {
+        policies.account = true;
+      }
+    })
+    callback(null, policies)
   },
 
   _bindUtilsToUser(user) {
