@@ -268,10 +268,24 @@ const db = {
   },
 
   _bindUtilsToUser(user) {
+
     user.verifyPassword = (password) => {
       return user.login.password === this._hashPassword(password);
     }
+
+    user.updatePassword = ({login}, done) => {
+
+      if (!this._ready) {
+        done({error: 'dynamo-db is not ready yet'}, null);
+        return this;
+      }
+  
+      this._updatePassword(user.uid, {login}, done);
+
+    } 
+
     return user
+
   },
 
   _hashPassword(password) {
