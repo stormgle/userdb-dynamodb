@@ -1,7 +1,6 @@
 "use strict"
 
 const AWS = require('aws-sdk');
-const Joi = require('joi')
 
 const crypto = require('crypto')
 
