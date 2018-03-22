@@ -257,10 +257,12 @@ const db = {
   getPolicy(roles, callback) {
     const policies = {}
     roles.forEach( (role) => {
-      if (role === 'admin') {
-        policies.admin = true;
-      } else {
-        policies.account = true;
+      if (process.env[`POLICY_${role.toUpperCase()}`]) {
+        const p = process.env[`POLICY_${role.toUpperCase()}`];
+        const pList = p.split(" ");
+        pList.forEach(pol => {
+          policies[pol.trim()] = true;
+        })
       }
     })
     callback(null, policies)
