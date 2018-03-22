@@ -258,7 +258,7 @@ const db = {
     const policies = {}
     roles.forEach( (role) => {
       if (role === 'admin') {
-        policies.super = true;
+        policies.admin = true;
       } else {
         policies.account = true;
       }
