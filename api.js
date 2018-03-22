@@ -68,12 +68,12 @@ const db = {
   queryUser({ username = null, uid = null }, done) {
 
     if (!username  && !uid ) {
-      done({error: 'must specify username or uid'}, null)
+      done && done({error: 'must specify username or uid'}, null)
       return
     }
 
     if (username.length === 0 && uid.length === 0) {
-      done({error: 'username and uid are empty'})
+      done && done({error: 'username and uid are empty'})
       return
     }
 
@@ -101,9 +101,17 @@ const db = {
         if (err) { done({error:err}, null) }
         else {
           if (data && data.Items && data.Items.length > 0) {
-            done(null, this._bindUtilsToUser.call(this, data.Items[0]))
+            const user = data.Items[0];
+            db.getPolicy(user.roles, (err, policies) => {
+              if (err) {
+                done && done(err, null)
+              } else {
+                user.policies = policies;
+                done && done(null, this._bindUtilsToUser.call(this, user));
+              }
+            })  
           } else {
-            done(null, null)
+            done && done(null, null)
           }
         }
         
@@ -119,6 +127,7 @@ const db = {
 
     const now = new Date();
     user.createdAt = now.getTime();
+    user.policies = {};
 
     user.login.password = this._hashPassword(user.login.password);
 
@@ -133,8 +142,14 @@ const db = {
       if (err) {
         done && done(err, null)
       } else {
-
-        done && done(null, this._bindUtilsToUser.call(this, user));  
+        db.getPolicy(user.roles, (err, policies) => {
+          if (err) {
+            done && done(err, null)
+          } else {
+            user.policies = policies;
+            done && done(null, this._bindUtilsToUser.call(this, user));
+          }
+        })  
       }
     });
 
