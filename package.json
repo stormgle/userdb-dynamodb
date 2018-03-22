@@ -1,6 +1,6 @@
 {
   "name": "@stormgle/userdb-dynamodb",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "AWS DynamoDB driver for userdb-api",
   "main": "api.js",
   "scripts": {
