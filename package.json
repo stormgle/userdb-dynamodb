@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stormgle/userdb-dynamodb.git"
+    "url": "git+https://github.com/stormgle/userdb-dynamodb-driver.git"
   },
   "author": "duongtdn",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/stormgle/userdb-dynamodb/issues"
+    "url": "https://github.com/stormgle/userdb-dynamodb-driver/issues"
   },
-  "homepage": "https://github.com/stormgle/userdb-dynamodb#readme",
+  "homepage": "https://github.com/stormgle/userdb-dynamodb-driver#readme",
   "dependencies": {
     "aws-sdk": "^2.205.0"
   }
