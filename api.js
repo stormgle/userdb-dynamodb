@@ -325,10 +325,10 @@ function DynamoDB({ region = 'us-west-2', endpoint = 'http://localhost:8000' }, 
       if (err) {
         console.log("Error when checking DynamoDB status")
         db._ready = false;
-        onReady(err);
+        onReady(err, null);
       } else {
         db._ready = true;
-        onReady();
+        onReady(null, data);
       }
     });
   } else {
