@@ -72,11 +72,6 @@ const db = {
       return
     }
 
-    if (username.length === 0 && uid.length === 0) {
-      done && done({error: 'username and uid are empty'})
-      return
-    }
-
     const params = uid && uid.length > 0 ?
       { 
         TableName: "USERS", 
