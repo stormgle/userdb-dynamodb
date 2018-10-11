@@ -309,9 +309,7 @@ const db = {
 
 }
 
-function DynamoDB({ region = 'us-west-2', endpoint = 'http://localhost:8000' }, onReady) {
- 
-  AWS.config.update({ region, endpoint });
+function DynamoDB(onReady) {
  
   dynamodb = new AWS.DynamoDB();
 
