@@ -202,6 +202,7 @@ const db = {
   },
 
   _updateUserProps(uid, props, done) {
+
     const docClient = new AWS.DynamoDB.DocumentClient();
     let exp  = 'set';
     const nn = {};
@@ -217,7 +218,7 @@ const db = {
       if (typeof props[name] === 'object') {
         for (let item in props[name]) {
           const p = `#p${i}`;      
-          if (typeof  props[name][item] === 'object') {
+          if ({}.toString.call(props[name][item])  === '[object Object]' && Object.keys(props[name][item]).length > 0) {
             nn[p] = item;
             for (let k in props[name][item]) {
               const pp = `#pp${i}`;
