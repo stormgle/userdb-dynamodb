@@ -202,9 +202,9 @@ const db = {
   },
 
   _updateUserProps(uid, props, done) {
-
     const docClient = new AWS.DynamoDB.DocumentClient();
     let exp  = 'set';
+    const nn = {};
     const val = {};
     let i = 1;
 
@@ -213,13 +213,27 @@ const db = {
       delete props.uid;
     }
 
-    for (let name in props) {
+    for (let name in props) {    
       if (typeof props[name] === 'object') {
         for (let item in props[name]) {
-          const v = `:c${i}`;
-          exp += ` ${name}.${item} = ${v},`;
-          val[v] = props[name][item];
-          i++;
+          const p = `#p${i}`;      
+          if (typeof  props[name][item] === 'object') {
+            nn[p] = item;
+            for (let k in props[name][item]) {
+              const pp = `#pp${i}`;
+              const v = `:c${i}`;
+              exp += ` ${name}.${p}.${pp} = ${v},`;
+              nn[pp] = k;
+              val[v] = props[name][item][k];
+              i++;
+            }
+          } else {
+            const v = `:c${i}`;
+            exp += ` ${name}.${p} = ${v},`;
+            nn[p] = item;
+            val[v] = props[name][item];
+            i++;
+          }
         }
       } else {
         const v = `:c${i}`;
@@ -236,6 +250,7 @@ const db = {
         TableName: 'USERS',
         Key: { uid },
         UpdateExpression: exp,
+        ExpressionAttributeNames: nn,
         ExpressionAttributeValues: val,
         ReturnValues:"UPDATED_NEW"
       },
